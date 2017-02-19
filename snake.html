@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head>
+    <style>
+        body {
+            background: #dddddd;
+        }
+
+        #myCanvas {
+            border:black;
+            background: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="container" align="center">
+        <span>Score</span>
+        <input id="score" type="text">
+        <br><br>
+        <canvas id="myCanvas" width="800" height="500" style="border:solid">
+            canvas not supported
+        </canvas>
+        <br>
+        <input type="button" id="button" onclick="trigger()" value="Start"></input>
+    </div>
+
+    <script type="text/javascript" src="snake.js"></script>
+
+</body>
+</html>
