@@ -1,8 +1,11 @@
 var can = document.getElementById("myCanvas");
 var cxt = can.getContext("2d");
 var score = document.getElementById("score");
+document.onkeydown = getDirection;
 var food;
 var len = 10;
+var move_x = {'Left': -len, 'Right': len, 'Up': 0, "Down": 0};
+var move_y = {'Left': 0, 'Right': 0, 'Up': -len, 'Down': len};
 
 function Node(x, y) {
     this.x = x;
@@ -12,9 +15,10 @@ function Node(x, y) {
     cxt.fillRect(this.x, this.y, len, len);
 
     this.moveTo = function(newX, newY) {
+        cxt.clearRect(this.x, this.y, len, len);
         this.x = newX;
         this.y = newY;
-        cxt.strokeRect(this.x, this.y, len, len);
+        cxt.fillRect(this.x, this.y, len, len);
     }
 }
 
@@ -32,35 +36,83 @@ function Snake() {
     mid.prev = head;
     mid.next = tail;
     tail.prev = mid;
+    var direct = 'Right';
+
+    this.eatFood = function() {
+        head.prev = food;
+        food.next = head;
+        head = food;
+        randomFood();
+    }
 
     this.moveSnake = function() {
-        tail.moveTo(head.x + len, head.y);
+        if ((head.x == 790 && direct == 'Right') || (head.x == 0 &&  direct == 'Left')
+            || (head.y == 0 && direct == 'Up') || (head.y == 490 && direct == 'Down')) {
+            gameOver();
+            return;
+        }
 
+        if (head.x + move_x[direct] == food.x && head.y + move_y[direct] == food.y) {
+            console.log(food.x, food.y);
+            this.eatFood();
+        }
+
+        console.log(direct)
+        tail.moveTo(head.x + move_x[direct], head.y + move_y[direct]);
+        console.log(tail.x, tail.y);
+        tail.prev = null;
+        tail.next = head;
+        head.prev = tail;
+        head = tail;
+        tail = mid;
+        tail.next = null;
+        mid = tail.prev;
     }
 }
 
-var snake = new Snake();
-randomFood();
+function getDirection(event) {
+    var event = event || window.event;
+    console.log("key", event.keyCode);
+    switch (event.keyCode) {
+        case 37: //left
+            if (snake.direct != 'Right')
+                snake.direct = 'Left';
+            break;
+        case 38: //up
+            if (snake.direct != 'Down')
+                snake.direct = 'Up';
+            break;
+        case 39: //right
+            if (snake.direct != 'Left')
+                snake.direct = 'Right';
+            break;
+        case 40: //down
+            if (snake.direct != 'Up')
+                snake.direct = 'Down';
+            break;
+        default:
+            break;
+    }
+
+}
 
 function trigger() {
     var button = document.getElementById("button");
     console.log(button.value);
     if (button.value == "Start") {
         button.value = "Stop";
-        start();
+        gameloop = setInterval(snake.moveSnake, 500); // start loop
     }
     else {
         button.value = "Start";
-        stop();
+        clearInterval(gameloop); // stop loop
     }
 }
 
-function start() {
-    console.log("start");
-    //gameloop = setInterval(snake.move, 100);
-    snake.moveSnake();
+function gameOver() {
+    clearInterval(gameloop);
+    alert("game over!");
 }
 
-function stop() {
-    console.log("stop");
-}
+var snake = new Snake();
+randomFood();
