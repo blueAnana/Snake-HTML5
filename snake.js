@@ -6,6 +6,13 @@ var food;
 var len = 10;
 var move_x = {'Left': -len, 'Right': len, 'Up': 0, "Down": 0};
 var move_y = {'Left': 0, 'Right': 0, 'Up': -len, 'Down': len};
+var node_matrix = new Array();
+for (var i = 0; i < 80; i++) {
+    node_matrix[i] = new Array();
+    for (var j = 0; j < 50; j++) {
+        node_matrix[i][j] = 0;
+    }
+}
 
 function Node(x, y) {
     this.x = x;
@@ -36,7 +43,10 @@ function Snake() {
     mid.prev = head;
     mid.next = tail;
     tail.prev = mid;
-    var direct = 'Right';
+    node_matrix[0][0] = 1;
+    node_matrix[1][0] = 1;
+    node_matrix[2][0] = 1;
+    this.direct = 'Right';
 
     this.eatFood = function() {
         head.prev = food;
@@ -46,20 +56,24 @@ function Snake() {
     }
 
     this.moveSnake = function() {
-        if ((head.x == 790 && direct == 'Right') || (head.x == 0 &&  direct == 'Left')
-            || (head.y == 0 && direct == 'Up') || (head.y == 490 && direct == 'Down')) {
-            gameOver();
-            return;
-        }
+        console.log(this.direct);
+        var newX = head.x + move_x[this.direct];
+        var newY = head.y + move_y[this.direct];
 
-        if (head.x + move_x[direct] == food.x && head.y + move_y[direct] == food.y) {
-            console.log(food.x, food.y);
+        console.log(newX, newY);
+        console.log(node_matrix[newX / 10][newY / 10] );
+        if (newX > 790 || newX < 0 || newY > 490 || newY < 0 || node_matrix[newX / 10][newY / 10] == 1)
+            return gameOver();
+
+        if (newX == food.x && newY == food.y) {
             this.eatFood();
+            newX = head.x + move_x[this.direct];
+            newY = head.y + move_y[this.direct];
         }
 
-        console.log(direct)
-        tail.moveTo(head.x + move_x[direct], head.y + move_y[direct]);
-        console.log(tail.x, tail.y);
+        node_matrix[tail.x / 10][tail.y / 10] = 0;
+        tail.moveTo(newX, newY);
+        node_matrix[tail.x / 10][tail.y / 10] = 1;
         tail.prev = null;
         tail.next = head;
         head.prev = tail;
@@ -101,7 +115,7 @@ function trigger() {
     console.log(button.value);
     if (button.value == "Start") {
         button.value = "Stop";
-        gameloop = setInterval(snake.moveSnake, 500); // start loop
+        gameloop = setInterval(snake.moveSnake.bind(snake), 500); // start loop
     }
     else {
         button.value = "Start";
