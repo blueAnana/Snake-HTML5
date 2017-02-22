@@ -1,18 +1,17 @@
 var can = document.getElementById("myCanvas");
 var cxt = can.getContext("2d");
-var score = document.getElementById("score");
+var scoreDoc = document.getElementById("score");
+var score = 0;
+scoreDoc.value = score;
+var button = document.getElementById("button");
 document.onkeydown = getDirection;
 var food;
 var len = 10;
 var move_x = {'Left': -len, 'Right': len, 'Up': 0, "Down": 0};
 var move_y = {'Left': 0, 'Right': 0, 'Up': -len, 'Down': len};
 var node_matrix = new Array();
-for (var i = 0; i < 80; i++) {
-    node_matrix[i] = new Array();
-    for (var j = 0; j < 50; j++) {
-        node_matrix[i][j] = 0;
-    }
-}
+initialMatrix();
+
 
 function Node(x, y) {
     this.x = x;
@@ -48,7 +47,23 @@ function Snake() {
     node_matrix[2][0] = 1;
     this.direct = 'Right';
 
+    this.initialSnake = function () {
+        head.moveTo(20, 0);
+        mid.moveTo(10, 0);
+        tail.moveTo(0, 0);
+        head.next = mid;
+        mid.prev = head;
+        mid.next = tail;
+        tail.prev = mid;
+        node_matrix[0][0] = 1;
+        node_matrix[1][0] = 1;
+        node_matrix[2][0] = 1;
+        this.direct = 'Right';
+    }
+
     this.eatFood = function() {
+        score += 10;
+        scoreDoc.value = score;
         head.prev = food;
         food.next = head;
         head = food;
@@ -60,8 +75,6 @@ function Snake() {
         var newX = head.x + move_x[this.direct];
         var newY = head.y + move_y[this.direct];
 
-        console.log(newX, newY);
-        console.log(node_matrix[newX / 10][newY / 10] );
         if (newX > 790 || newX < 0 || newY > 490 || newY < 0 || node_matrix[newX / 10][newY / 10] == 1)
             return gameOver();
 
@@ -81,6 +94,12 @@ function Snake() {
         tail = mid;
         tail.next = null;
         mid = tail.prev;
+    }
+
+    this.newGame = function () {
+        cxt.clearRect(0, 0, 800, 500);
+        initialMatrix();
+        this.initialSnake();
     }
 }
 
@@ -111,11 +130,10 @@ function getDirection(event) {
 }
 
 function trigger() {
-    var button = document.getElementById("button");
     console.log(button.value);
     if (button.value == "Start") {
         button.value = "Stop";
-        gameloop = setInterval(snake.moveSnake.bind(snake), 500); // start loop
+        gameloop = setInterval(snake.moveSnake.bind(snake), 200); // start loop
     }
     else {
         button.value = "Start";
@@ -123,9 +141,21 @@ function trigger() {
     }
 }
 
+function initialMatrix() {
+    for (var i = 0; i < 80; i++) {
+        node_matrix[i] = new Array();
+        for (var j = 0; j < 50; j++) {
+            node_matrix[i][j] = 0;
+        }
+    }
+}
+
 function gameOver() {
     clearInterval(gameloop);
-    alert("game over!");
+    alert("game over!\n\n You score is: " + score);
+    button.value = "Start";
+    snake.newGame();
+    randomFood();
 }
 
 var snake = new Snake();
